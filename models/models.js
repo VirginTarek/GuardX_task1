@@ -11,6 +11,10 @@ const conversionSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  timestamp: {
+    type: Date,
+    default: Date.now, // ✅ ده بيضيف التاريخ أوتوماتيك عند الإنشاء
+   },
 });
 
 export default mongoose.model('Conversion', conversionSchema);

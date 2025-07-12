@@ -33,7 +33,7 @@ export function romanToInt(roman) {
     }
 
     prevValue = currentValue;
-  }
+   }
 
-  return total;
-}
+  return total;
+ }

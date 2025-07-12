@@ -1,11 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <script src="index.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roman Numeral Converter</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 30px;
+        background-color: #f0f4f8;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        color: #6b7280;
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      .input-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      input {
+        padding: 10px;
+        width: 180px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: #f8fafc;
+      }
+      input:focus {
+        outline: none;
+        border-color: #a5b4fc;
+        box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.2);
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #a5b4fc;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #818cf8;
+      }
+      #result {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 14px;
+      }
+      .success {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .error {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+      #history {
+        margin-top: 30px;
+      }
+      h2 {
+        color: #6b7280;
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 8px;
+        border: 1px solid #e5e7eb;
+        text-align: left;
+      }
+      th {
+        background-color: #e0e7ff;
+        color: #4b5563;
+      }
+      tr:nth-child(even) {
+        background-color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Roman Numeral Converter</h1>
+      <div class="input-group">
+        <input
+          type="text"
+          id="romanInput"
+          placeholder="Enter Roman numeral (e.g., XIV)"
+        />
+        <button onclick="convertRoman()">Convert</button>
+      </div>
+      <div id="result"></div>
+      <div id="history">
+        <h2>Conversion History</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Roman Numeral</th>
+              <th>Integer</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      async function convertRoman() {
+        const romanInput = document.getElementById("romanInput").value.trim();
+        const resultDiv = document.getElementById("result");
+
+        if (!romanInput) {
+          resultDiv.className = "error";
+          resultDiv.textContent = "Please enter a Roman numeral";
+          return;
+         }
+
+        try {
+          const response = await fetch("http://localhost:3000/convert", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", // ✅ التصحيح هنا
+            },
+            body: JSON.stringify({ roman: romanInput }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            resultDiv.className = "success";
+            resultDiv.textContent =` Result: ${data.integer}`;
+            fetchHistory();
+          } else {
+            resultDiv.className = "error";
+            resultDiv.textContent = `Error: ${data.error}`;
+          }
+        } catch (error) {
+          resultDiv.className = "error";
+          resultDiv.textContent = "Error: Failed to connect to server";
+        }
+      }
+
+      async function fetchHistory() {
+        try {
+          const response = await fetch("http://localhost:3000/conversion");
+          const conversions = await response.json();
+          const historyTable = document.getElementById("historyTable");
+
+          historyTable.innerHTML = "";
+          conversions.forEach((conv) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${conv.id}</td>
+              <td>${conv.roman}</td>
+              <td>${conv.integer}</td>
+              <td>${new Date(conv.timestamp).toLocaleString()}</td>
+            `;
+            historyTable.appendChild(row);
+          });
+        } catch (error) {
+          console.error("Failed to fetch history:", error);
+        }
+      }
+
+      // Load history on page load
+      fetchHistory();
+    </script>
+  </body>
 </html>
