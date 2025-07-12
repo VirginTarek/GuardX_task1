@@ -1,54 +1,79 @@
-import * as productService from '../services/service.js';
+import * as Conversion from '../services/service.js';
+import { romanToInt } from '../main_function/romantoint.js';
 
+// Get all conversions
 export async function getnumbers(req, res) {
   try {
-    const allProducts = await productService.getnumbers();
-    res.status(200).json(allProducts);
+    const allNumbers = await Conversion.getnumbers();
+    res.status(200).json(allNumbers);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 }
 
+// Get conversion by ID
 export async function getnumberById(req, res) {
   try {
-    const product = await productService.getnumberById(req.params.id);
-    if (!product) {
-      return res.status(404).send({ message: 'Product not found' });
+    const numid = await Conversion.getnumberById(req.params.id);
+    if (!numid) {
+      return res.status(404).send({ message: 'Conversion not found' });
     }
-    res.status(200).json(product);
+    res.status(200).json(numid);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 }
 
+// Add new conversion
 export async function addnumber(req, res) {
   try {
-    const newProduct = await productService.addnumber(req.body);
-    res.status(201).send({ message: 'Product created', product: newProduct });
+    const { roman } = req.body;
+
+    if (!roman || typeof roman !== 'string') {
+      return res.status(400).send({ message: 'Invalid Roman numeral input' });
+    }
+
+    const integer = romanToInt(roman);
+
+    const newConversion = await Conversion.addnumber({ roman, integer });
+
+    res.status(201).send({ message: 'Conversion added', conversion: newConversion });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 }
 
+// Update existing conversion
 export async function updatenumber(req, res) {
   try {
-    const updatedProduct = await productService.updatenumber(req.params.id, req.body);
-    if (!updatedProduct) {
-      return res.status(404).send({ message: 'Product not found' });
+    const { roman } = req.body;
+
+    if (!roman || typeof roman !== 'string') {
+      return res.status(400).send({ message: 'Invalid Roman numeral input' });
     }
-    res.status(200).send({ message: 'Product updated', product: updatedProduct });
+
+    const integer = romanToInt(roman);
+
+    const updatedConversion = await Conversion.updatenumber(req.params.id, { roman, integer });
+
+    if (!updatedConversion) {
+      return res.status(404).send({ message: 'Conversion not found' });
+    }
+
+    res.status(200).send({ message: 'Conversion updated', conversion: updatedConversion });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 }
 
+// Delete conversion
 export async function deletenumber(req, res) {
   try {
-    const deletedProduct = await productService.deletenumber(req.params.id);
-    if (!deletedProduct) {
-      return res.status(404).send({ message: 'Product not found' });
+    const deletedConversion = await Conversion.deletenumber(req.params.id);
+    if (!deletedConversion) {
+      return res.status(404).send({ message: 'Conversion not found' });
     }
-    res.status(200).send({ message: 'Product deleted' });
+    res.status(200).send({ message: 'Conversion deleted' });
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
