@@ -1,4 +1,4 @@
-import Conversion from '../models/conversion.model.js'; 
+import Conversion from '../models/models.js'; 
 
 export async function getnumbers() {
   return await Conversion.find();
@@ -19,4 +19,3 @@ export async function updatenumber(id, NumberData) {
 export async function deletenumber(id) {
   return await Conversion.findByIdAndDelete(id);
 }
-import * as NumberService from '../services/service.js';
